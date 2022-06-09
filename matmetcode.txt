@@ -1,0 +1,280 @@
+(* Harmonic oscillator *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+H[basissize_] := h0[basissize];
+
+qubits = 3; dimB = 2^qubits; fname = "qho_3qubits_test.txt";
+H  = N[H[dimB]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+Close[s];
+
+(* Anharmonic oscillator *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+H[basissize_, g_] := 
+  h0[basissize] + 
+   g x[basissize].x[basissize].x[basissize].x[basissize]/4;
+
+qubits = 4; dimB = 2^qubits; fname = "anharmonic_osc.txt"; g = .275;
+H  = N[H[dimB, g]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+Close[s];
+
+
+(* Double-well *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+H[basissize_, g_] := 
+  h0[basissize] - 3 x[basissize].x[basissize]/2 + 
+   g x[basissize].x[basissize].x[basissize].x[basissize]/4;
+
+qubits = 4; dimB = 2^qubits; fname = "double_well.txt"; g = .15;
+H  = N[H[dimB, g]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+Close[s];
+
+
+(* Universe 1 / II.1 *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+G[basissize_] := 
+ p[basissize].p[basissize]/4 + x[basissize].x[basissize]
+H[basissize_] := -KroneckerProduct[G[basissize], 
+    IdentityMatrix[basissize]] + 
+  KroneckerProduct[IdentityMatrix[basissize], G[basissize]]
+
+
+qubits = 4; dimB = 2^qubits; fname = "doubled_harmonic_fixed.txt";
+H  = N[ H[Sqrt[dimB]].H[Sqrt[dimB]]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+Close[s];
+
+
+(* Universe 2 / II.2 *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+G[basissize_, g_] := 
+  p[basissize].p[basissize]/4 + x[basissize].x[basissize] + 
+   g x[basissize].x[basissize].x[basissize].x[basissize]/4;
+H[basissize_, 
+   g_] :=  -KroneckerProduct[G[basissize, g], 
+     IdentityMatrix[basissize]] + 
+   KroneckerProduct[IdentityMatrix[basissize], G[basissize, g]];
+
+
+qubits = 4; dimB = 2^qubits; fname = "doubled_anharmonic_fixed.txt"; \
+g = .275;
+H  = N[ H[Sqrt[dimB], g].H[Sqrt[dimB], g]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+Close[s];
+
+
+(* Universe 4 / II.3 *)
+Clear["Global`*"];
+adagfxn[n_, m_] := N[Sqrt[m]] /; m - n == 1;
+adagfxn[n_, m_] := 0. /; m - n != 1;
+adag[basissize_] := 
+  Table[adagfxn[n, m], {n, 0, basissize - 1}, {m, 0, basissize - 1}];
+a[basissize_] := ConjugateTranspose[adag[basissize]];
+x[basissize_] := Sqrt[1 / 2.] (a[basissize] + adag[basissize]);
+p[basissize_] := -I Sqrt[2.] (a[basissize] -  adag[basissize]);
+h0[basissize_] := 
+  DiagonalMatrix[Table[n + 1 / 2, {n, 0, basissize - 1}]] ;
+G[basissize_, g_] := 
+  p[basissize].p[basissize]/4 -  x[basissize].x[basissize] + 
+   g x[basissize].x[basissize].x[basissize].x[basissize]/4;
+H[basissize_, 
+   g_] :=  -KroneckerProduct[G[basissize, g], 
+     IdentityMatrix[basissize]] + 
+   KroneckerProduct[IdentityMatrix[basissize], G[basissize, g]];
+
+
+qubits = 4; dimB = 2^qubits; fname = "doubled_double_well_fixed.txt"; \
+g = .15;
+H  = N[ H[Sqrt[dimB], g].H[Sqrt[dimB], g]];
+size = Dimensions[H][[1]];
+X = {{0, 1}, {1, 0}};
+Y = {{0, -I}, {I, 0}};
+Z = {{1, 0}, {0, -1}};
+\[CapitalIota] = IdentityMatrix[2];
+OGpauli = {X, Y, Z, \[CapitalIota]};
+permList = Tuples[OGpauli, {qubits}];
+permListString = Tuples[{"X", "Y", "Z", "I"}, {qubits}];
+fname = FileNameJoin[{NotebookDirectory[], fname}];
+s = OpenWrite[fname];
+Print[4^qubits "in tbp basis set\n"]
+Monitor[
+ For[j = 1, j <= Length[permList], j++,
+  \[CapitalSigma] = Apply[KroneckerProduct, permList[[j]]];
+  a = Chop[
+    Sum[\[CapitalSigma][[i]].H[[All, i]], {i, 1, size}]/2^qubits];
+  If[a != 0,
+   (
+    b = StringJoin[permListString[[j]]];
+    Export[s, StringReverse[b]];
+    Export[s, "\n"];
+    Write[s, a];
+    )
+   ]
+  ], j/4^qubits*100 // N]
+
